@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Robinhood Crypto Research Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grid-bg" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Application navigation">
+        <a class="brand brand-lockup" href="index.html" aria-label="Robinhood Crypto Research Agent home">
+          <span>Crypto Research</span>
+          <small>Paper Trading Console</small>
+        </a>
+        <div class="status-strip" aria-label="Safety status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Live orders disabled</span>
+        </div>
+      </nav>
+    </header>
+
+    <section class="console-hero">
+      <p class="eyebrow">Research / Risk Controls / Market Replay</p>
+      <h1>ROBINHOOD CRYPTO RESEARCH AGENT</h1>
+      <p>
+        Paper-trade live-style strategy behavior against editable market data while keeping
+        the first milestone safely isolated from live execution.
+      </p>
+    </section>
+
+    <main class="app-shell">
+      <section class="control-panel" aria-label="Simulation controls">
+        <div class="panel-heading">
+          <p class="eyebrow">Control Stack</p>
+          <h2>Simulation</h2>
+          <p>Run a live-style rebound optimizer through paper-trading risk checks.</p>
+        </div>
+
+        <form id="simulation-form">
+          <label>
+            Symbol
+            <input id="symbol" name="symbol" value="BTC-USD" autocomplete="off" />
+          </label>
+
+          <label>
+            Starting Cash
+            <input id="starting-cash" name="starting-cash" value="10000" inputmode="decimal" autocomplete="off" />
+          </label>
+
+          <label>
+            Max Trade Size
+            <input id="max-trade-size" name="max-trade-size" value="1000" inputmode="decimal" autocomplete="off" />
+          </label>
+
+          <label>
+            Max Daily Loss
+            <input id="max-daily-loss" name="max-daily-loss" value="500" inputmode="decimal" autocomplete="off" />
+          </label>
+
+          <label>
+            Max Trades Per Day
+            <input id="max-trades" name="max-trades" value="10" inputmode="numeric" autocomplete="off" />
+          </label>
+
+          <label>
+            Gain Reserve %
+            <input id="gain-reserve-percent" name="gain-reserve-percent" value="15" inputmode="decimal" autocomplete="off" />
+          </label>
+
+          <div class="control-group" aria-label="Strategy optimization controls">
+            <p class="eyebrow">Live-Style Rules</p>
+            <label>
+              Lookback Window
+              <input id="lookback-window" name="lookback-window" value="4" inputmode="numeric" autocomplete="off" />
+            </label>
+
+            <label>
+              Buy Dip %
+              <input id="buy-dip-percent" name="buy-dip-percent" value="4" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Rebound Confirm %
+              <input id="rebound-percent" name="rebound-percent" value="1" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Profit Target %
+              <input id="profit-target-percent" name="profit-target-percent" value="8" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Stop Loss %
+              <input id="stop-loss-percent" name="stop-loss-percent" value="6" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Trailing Stop %
+              <input id="trailing-stop-percent" name="trailing-stop-percent" value="5" inputmode="decimal" autocomplete="off" />
+            </label>
+          </div>
+
+          <label class="wide">
+            Price Series
+            <textarea id="price-series" name="price-series" rows="4">10, 10, 10, 10, 10, 12, 14, 12, 10, 8</textarea>
+          </label>
+
+          <label class="switch">
+            <input id="kill-switch" name="kill-switch" type="checkbox" />
+            <span>Global kill switch</span>
+          </label>
+
+          <button type="submit">Run Paper Simulation</button>
+          <p id="form-error" class="form-error" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="workspace" aria-label="Simulation output">
+        <div class="metrics-grid">
+          <article>
+            <span>Cash</span>
+            <strong id="cash">$0.00</strong>
+          </article>
+          <article>
+            <span>Available Cash</span>
+            <strong id="available-cash">$0.00</strong>
+          </article>
+          <article>
+            <span>Portfolio Value</span>
+            <strong id="portfolio-value">$0.00</strong>
+          </article>
+          <article>
+            <span>Realized P/L</span>
+            <strong id="realized-pl">$0.00</strong>
+          </article>
+          <article>
+            <span>Gain Reserve</span>
+            <strong id="gain-reserve">$0.00</strong>
+          </article>
+          <article>
+            <span>Trades</span>
+            <strong id="trade-count">0</strong>
+          </article>
+        </div>
+
+        <section class="chart-panel" aria-label="Price and signal chart">
+          <div class="panel-heading">
+            <p class="eyebrow">Paper Output</p>
+            <h2>Market Stream</h2>
+            <p id="signal-summary">Waiting for simulation.</p>
+          </div>
+          <canvas id="price-chart" width="980" height="360" aria-label="Price chart"></canvas>
+        </section>
+
+        <section class="table-panel" aria-label="Trade and event history">
+          <div class="panel-heading">
+            <p class="eyebrow">Audit Trail</p>
+            <h2>Event Log</h2>
+            <p>Signals, approved paper trades, and rejected trades.</p>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Step</th>
+                  <th>Type</th>
+                  <th>Signal</th>
+                  <th>Price</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="event-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="reference-panel" aria-label="Control stack reference">
+          <div class="panel-heading">
+            <p class="eyebrow">Reference Card</p>
+            <h2>Control Stack Notes</h2>
+            <p>A quick reminder of what each paper-trading control changes.</p>
+          </div>
+
+          <div class="reference-grid">
+            <article>
+              <span>Starting Cash</span>
+              <p>Total simulated account balance before any paper trades run.</p>
+            </article>
+            <article>
+              <span>Max Trade Size</span>
+              <p>Caps how much available cash a single buy can deploy.</p>
+            </article>
+            <article>
+              <span>Max Daily Loss</span>
+              <p>Stops new buys after realized losses reach the limit.</p>
+            </article>
+            <article>
+              <span>Max Trades Per Day</span>
+              <p>Limits how many paper entries the optimizer can open.</p>
+            </article>
+            <article>
+              <span>Gain Reserve %</span>
+              <p>Saves a percentage of profitable realized exits as a tax-safety planning bucket.</p>
+            </article>
+            <article>
+              <span>Lookback Window</span>
+              <p>Number of recent prices used to judge lows, highs, dips, and momentum.</p>
+            </article>
+            <article>
+              <span>Buy Dip %</span>
+              <p>Minimum drop from a recent high before a rebound can become a buy setup.</p>
+            </article>
+            <article>
+              <span>Rebound Confirm %</span>
+              <p>Minimum recovery from a recent low before the optimizer buys.</p>
+            </article>
+            <article>
+              <span>Profit Target %</span>
+              <p>Gain from entry that triggers a paper sell to lock in profit.</p>
+            </article>
+            <article>
+              <span>Stop Loss %</span>
+              <p>Loss from entry that triggers a protective paper sell.</p>
+            </article>
+            <article>
+              <span>Trailing Stop %</span>
+              <p>Allowed pullback from the highest price seen after entry.</p>
+            </article>
+            <article>
+              <span>Kill Switch</span>
+              <p>Rejects every trade, useful for testing the safety layer.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
