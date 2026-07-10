@@ -42,7 +42,8 @@ def price_action_live_signal(
     lookback_window: int = 4,
     buy_dip_percent: float = 4.0,
     rebound_percent: float = 1.0,
-    profit_target_percent: float = 8.0,
+    sell_above_dip_percent: float = 8.0,
+    dip_reference_price: float = 0.0,
     stop_loss_percent: float = 6.0,
     trailing_stop_percent: float = 5.0,
 ) -> Signal:
@@ -76,13 +77,14 @@ def price_action_live_signal(
 
     peak = max(highest_since_entry, price)
     gain = _percent_move(entry_price, price)
+    dip_target_gain = _percent_move(dip_reference_price, price) if dip_reference_price > 0 else 0.0
     drawdown_from_peak = _percent_move(peak, price)
     momentum_rolled_over = previous is not None and price < previous
     extended_near_high = price >= current_high * 0.998
 
     if gain <= -stop_loss_percent:
         return Signal.SELL
-    if gain >= profit_target_percent:
+    if dip_reference_price > 0 and dip_target_gain >= sell_above_dip_percent:
         return Signal.SELL
     if gain > 0 and drawdown_from_peak <= -trailing_stop_percent:
         return Signal.SELL
@@ -91,6 +93,58 @@ def price_action_live_signal(
     if index == len(prices) - 1 and gain != 0:
         return Signal.SELL
     return Signal.HOLD
+
+
+def explain_price_action_live_signal(
+    prices: Sequence[float],
+    index: int,
+    has_position: bool,
+    entry_price: float = 0.0,
+    highest_since_entry: float = 0.0,
+    lookback_window: int = 4,
+    buy_dip_percent: float = 4.0,
+    rebound_percent: float = 1.0,
+    sell_above_dip_percent: float = 8.0,
+    dip_reference_price: float = 0.0,
+    stop_loss_percent: float = 6.0,
+    trailing_stop_percent: float = 5.0,
+) -> str:
+    if index < 0 or index >= len(prices):
+        raise IndexError("index is outside the price series")
+
+    price = prices[index]
+    previous = prices[index - 1] if index > 0 else None
+    prior_index = max(0, index - 1)
+    prior_window_start = max(0, prior_index - lookback_window + 1)
+    prior_window = prices[prior_window_start : prior_index + 1]
+    current_window_start = max(0, index - lookback_window + 1)
+    current_window = prices[current_window_start : index + 1]
+    recent_low = min(prior_window)
+    recent_high = max(prior_window)
+    current_high = max(current_window)
+
+    if not has_position:
+        dip = abs(_percent_move(recent_high, recent_low)) if recent_high > 0 else 0.0
+        rebound = _percent_move(recent_low, price) if recent_low > 0 else 0.0
+        momentum = "yes" if previous is not None and price >= previous else "no"
+        return (
+            f"entry watch: dip {dip:.3f}%/{buy_dip_percent:.3f}%, "
+            f"rebound {rebound:.3f}%/{rebound_percent:.3f}%, momentum {momentum}"
+        )
+
+    peak = max(highest_since_entry, price)
+    gain = _percent_move(entry_price, price)
+    dip_target_gain = _percent_move(dip_reference_price, price) if dip_reference_price > 0 else 0.0
+    drawdown_from_peak = _percent_move(peak, price)
+    dip_text = f"{dip_target_gain:.3f}%/{sell_above_dip_percent:.3f}% above dip"
+    if dip_reference_price <= 0:
+        dip_text = "waiting for dip reference"
+    return (
+        f"exit watch: {dip_text}, entry gain {gain:.3f}%, "
+        f"stop -{stop_loss_percent:.3f}%, trailing drawdown {drawdown_from_peak:.3f}%/"
+        f"-{trailing_stop_percent:.3f}%, current high {current_high:.4f}"
+    )
+
 
 
 def _percent_move(from_price: float, to_price: float) -> float:

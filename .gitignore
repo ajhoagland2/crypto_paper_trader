@@ -8,3 +8,6 @@ venv/
 *.sqlite
 *.sqlite3
 logs/
+review_logs/
+*.log
+web_auth_store.json

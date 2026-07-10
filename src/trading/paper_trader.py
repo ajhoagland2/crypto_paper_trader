@@ -56,11 +56,38 @@ class PaperTrader:
             raise ValueError("insufficient paper position")
 
         realized_pl = (price - position.average_price) * quantity
-        self.reserve_from_gain(realized_pl)
+        reserved_gain = self.reserve_from_gain(realized_pl)
         position.quantity -= quantity
         self.cash += quantity * price
         if position.quantity == 0:
             del self.positions[symbol]
+        return self._record_trade(symbol, "SELL", quantity, price, realized_pl=realized_pl)
+
+    def sell_lot(
+        self,
+        symbol: str,
+        quantity: float,
+        price: float,
+        entry_price: float,
+    ) -> Trade:
+        """Sell a specific entry lot while preserving remaining cost basis."""
+        self._validate_order(quantity, price)
+        if entry_price <= 0:
+            raise ValueError("entry_price must be positive")
+        position = self.positions.get(symbol)
+        if position is None or quantity > position.quantity + 1e-12:
+            raise ValueError("insufficient paper position")
+
+        total_cost = position.quantity * position.average_price
+        realized_pl = (price - entry_price) * quantity
+        self.reserve_from_gain(realized_pl)
+        position.quantity -= quantity
+        self.cash += quantity * price
+        if position.quantity <= 1e-12:
+            del self.positions[symbol]
+        else:
+            remaining_cost = max(0.0, total_cost - (quantity * entry_price))
+            position.average_price = remaining_cost / position.quantity
         return self._record_trade(symbol, "SELL", quantity, price, realized_pl=realized_pl)
 
     def portfolio_value(self, latest_prices: Optional[Dict[str, float]] = None) -> float:

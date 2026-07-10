@@ -33,3 +33,15 @@ def test_rejects_oversized_sell() -> None:
 
     with pytest.raises(ValueError, match="insufficient paper position"):
         trader.sell("BTC-USD", quantity=1, price=100)
+
+
+def test_sell_lot_preserves_remaining_lot_cost_basis() -> None:
+    trader = PaperTrader(starting_cash=1_000)
+    trader.buy("BTC-USD", quantity=1, price=100)
+    trader.buy("BTC-USD", quantity=1, price=120)
+
+    trade = trader.sell_lot("BTC-USD", quantity=1, price=130, entry_price=100)
+
+    assert trade.realized_pl == 30
+    assert trader.positions["BTC-USD"].quantity == 1
+    assert trader.positions["BTC-USD"].average_price == 120

@@ -1,6 +1,7 @@
 import json
 import time
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any, Dict, Iterable, Optional
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -19,11 +20,12 @@ class RobinhoodAPIError(RuntimeError):
 class RetryConfig:
     attempts: int = 3
     backoff_seconds: float = 0.5
+    timeout_seconds: float = 10.0
     retry_statuses: tuple = (429, 500, 502, 503, 504)
 
 
 class RobinhoodClient:
-    """Small read-only wrapper around the official Robinhood Crypto API."""
+    """Small wrapper around the official Robinhood Crypto API."""
 
     def __init__(
         self,
@@ -52,10 +54,36 @@ class RobinhoodClient:
         params = [("asset_code", code.upper()) for code in asset_codes or []]
         return self._get(path, params=params)
 
+    def place_market_order(
+        self,
+        symbol: str,
+        side: str,
+        asset_quantity: float,
+        client_order_id: str,
+    ) -> Dict[str, Any]:
+        side = side.lower()
+        if side not in {"buy", "sell"}:
+            raise ValueError("side must be buy or sell")
+        if asset_quantity <= 0:
+            raise ValueError("asset_quantity must be positive")
+        body = {
+            "client_order_id": client_order_id,
+            "side": side,
+            "type": "market",
+            "symbol": symbol.upper(),
+            "market_order_config": {
+                "asset_quantity": _decimal_string(asset_quantity),
+            },
+        }
+        return self._post("/api/v1/crypto/trading/orders/", body)
+
     def _get(self, path: str, params: Optional[Iterable[tuple]] = None) -> Dict[str, Any]:
         query = urlencode(list(params or []))
         request_path = f"{path}?{query}" if query else path
         return self._request("GET", request_path)
+
+    def _post(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return self._request("POST", path, body=json.dumps(payload, separators=(",", ":")))
 
     def _request(self, method: str, path: str, body: Optional[str] = None) -> Dict[str, Any]:
         headers = self.signer.headers(method, path, body)
@@ -65,7 +93,7 @@ class RobinhoodClient:
         last_error: Optional[Exception] = None
         for attempt in range(1, self.retry_config.attempts + 1):
             try:
-                with urlopen(request, timeout=10) as response:
+                with urlopen(request, timeout=self.retry_config.timeout_seconds) as response:
                     payload = response.read().decode("utf-8")
                     return json.loads(payload) if payload else {}
             except HTTPError as exc:
@@ -82,3 +110,8 @@ class RobinhoodClient:
                 time.sleep(self.retry_config.backoff_seconds * attempt)
 
         raise RobinhoodAPIError(f"Robinhood API request failed: {last_error}") from last_error
+
+
+def _decimal_string(value: float) -> str:
+    decimal = Decimal(str(value)).normalize()
+    return format(decimal, "f")

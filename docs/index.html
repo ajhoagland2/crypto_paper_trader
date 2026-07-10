@@ -16,21 +16,71 @@
       <nav class="nav-shell" aria-label="Application navigation">
         <a class="brand brand-lockup" href="index.html" aria-label="Robinhood Crypto Research Agent home">
           <span>Crypto Research</span>
-          <small>Paper Trading Console</small>
+          <small id="brand-mode-label">Execution Console</small>
         </a>
         <div class="status-strip" aria-label="Safety status">
           <span class="status-dot" aria-hidden="true"></span>
-          <span>Live orders disabled</span>
+          <span id="backend-status">Mode not checked</span>
         </div>
+        <button type="button" id="sign-out" class="sign-out-button" hidden>Sign Out</button>
       </nav>
     </header>
+
+    <section id="auth-shell" class="auth-shell" aria-label="Sign in" hidden>
+      <div class="auth-panel">
+        <div class="panel-heading">
+          <p class="eyebrow">Secure Console</p>
+          <h1>Sign In</h1>
+          <p id="auth-copy">Use your configured operator email and password to open the trading console.</p>
+        </div>
+
+        <form id="sign-in-form" class="auth-form">
+          <label>
+            Email
+            <input id="auth-email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input id="auth-password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Sign In</button>
+        </form>
+
+        <form id="forgot-password-form" class="auth-form" hidden>
+          <label>
+            Recovery Email
+            <input id="recovery-email" type="email" autocomplete="email" required />
+          </label>
+          <button type="submit">Send Recovery Token</button>
+        </form>
+
+        <form id="reset-password-form" class="auth-form" hidden>
+          <label>
+            Reset Token
+            <input id="reset-token" autocomplete="one-time-code" required />
+          </label>
+          <label>
+            New Password
+            <input id="new-password" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button type="submit">Reset Password</button>
+        </form>
+
+        <div class="auth-links">
+          <button type="button" id="show-sign-in" hidden>Back to Sign In</button>
+          <button type="button" id="show-forgot-password">Forgot Password</button>
+          <button type="button" id="show-reset-password">Enter Reset Token</button>
+        </div>
+        <p id="auth-message" class="form-error" role="alert" aria-live="polite"></p>
+      </div>
+    </section>
 
     <section class="console-hero">
       <p class="eyebrow">Research / Risk Controls / Market Replay</p>
       <h1>ROBINHOOD CRYPTO RESEARCH AGENT</h1>
       <p>
-        Paper-trade live-style strategy behavior against editable market data while keeping
-        the first milestone safely isolated from live execution.
+        Run Robinhood market data through the momentum strategy with explicit mode-aware
+        controls for live execution, paper shadowing, and local backtests.
       </p>
     </section>
 
@@ -38,13 +88,13 @@
       <section class="control-panel" aria-label="Simulation controls">
         <div class="panel-heading">
           <p class="eyebrow">Control Stack</p>
-          <h2>Simulation</h2>
-          <p>Run a live-style rebound optimizer through paper-trading risk checks.</p>
+          <h2 id="control-panel-title">Trading Controls</h2>
+          <p id="control-panel-copy">Continuously run the control stack against Robinhood live quote ticks through the configured risk checks.</p>
         </div>
 
         <form id="simulation-form">
           <label>
-            Symbol
+            Active Symbol
             <input id="symbol" name="symbol" value="BTC-USD" autocomplete="off" />
           </label>
 
@@ -59,69 +109,140 @@
           </label>
 
           <label>
-            Max Daily Loss
-            <input id="max-daily-loss" name="max-daily-loss" value="500" inputmode="decimal" autocomplete="off" />
-          </label>
-
-          <label>
-            Max Trades Per Day
-            <input id="max-trades" name="max-trades" value="10" inputmode="numeric" autocomplete="off" />
-          </label>
-
-          <label>
             Gain Reserve %
             <input id="gain-reserve-percent" name="gain-reserve-percent" value="15" inputmode="decimal" autocomplete="off" />
           </label>
 
           <div class="control-group" aria-label="Strategy optimization controls">
-            <p class="eyebrow">Live-Style Rules</p>
+            <p class="eyebrow">Momentum Rules</p>
+
             <label>
-              Lookback Window
-              <input id="lookback-window" name="lookback-window" value="4" inputmode="numeric" autocomplete="off" />
+              Target Profit %
+              <input id="target-profit-percent" name="target-profit-percent" value="0.25" inputmode="decimal" autocomplete="off" />
             </label>
 
             <label>
-              Buy Dip %
-              <input id="buy-dip-percent" name="buy-dip-percent" value="4" inputmode="decimal" autocomplete="off" />
+              Entry Score %
+              <input id="momentum-entry-threshold" name="momentum-entry-threshold" value="80" inputmode="decimal" autocomplete="off" />
             </label>
 
             <label>
-              Rebound Confirm %
-              <input id="rebound-percent" name="rebound-percent" value="1" inputmode="decimal" autocomplete="off" />
+              Entry Interval Sec
+              <input id="momentum-entry-interval-seconds" name="momentum-entry-interval-seconds" value="300" inputmode="numeric" autocomplete="off" />
             </label>
 
             <label>
-              Profit Target %
-              <input id="profit-target-percent" name="profit-target-percent" value="8" inputmode="decimal" autocomplete="off" />
+              Max Open Trades
+              <input id="max-open-trades" name="max-open-trades" value="3" inputmode="numeric" autocomplete="off" />
             </label>
 
             <label>
-              Stop Loss %
-              <input id="stop-loss-percent" name="stop-loss-percent" value="6" inputmode="decimal" autocomplete="off" />
+              Exit Score % (reserved)
+              <input id="momentum-exit-threshold" name="momentum-exit-threshold" value="40" inputmode="decimal" autocomplete="off" readonly />
             </label>
 
             <label>
-              Trailing Stop %
-              <input id="trailing-stop-percent" name="trailing-stop-percent" value="5" inputmode="decimal" autocomplete="off" />
+              Catastrophic Loss %
+              <input id="catastrophic-loss-percent" name="catastrophic-loss-percent" value="-3" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Max Daily Loss %
+              <input id="max-daily-loss-percent" name="max-daily-loss-percent" value="5" inputmode="decimal" autocomplete="off" />
+            </label>
+
+            <label>
+              Cooldown Sec
+              <input id="cooldown-after-loss-seconds" name="cooldown-after-loss-seconds" value="60" inputmode="numeric" autocomplete="off" />
             </label>
           </div>
-
-          <label class="wide">
-            Price Series
-            <textarea id="price-series" name="price-series" rows="4">10, 10, 10, 10, 10, 12, 14, 12, 10, 8</textarea>
-          </label>
 
           <label class="switch">
             <input id="kill-switch" name="kill-switch" type="checkbox" />
             <span>Global kill switch</span>
           </label>
 
-          <button type="submit">Run Paper Simulation</button>
+          <button type="submit">Run Trading Loop</button>
+          <button type="button" id="test-controls">Use Fast Test Controls</button>
           <p id="form-error" class="form-error" role="alert" aria-live="polite"></p>
         </form>
       </section>
 
       <section class="workspace" aria-label="Simulation output">
+        <div class="view-tabs" aria-label="Workspace views">
+          <button type="button" class="view-tab is-active" data-view="paper-view">Trader</button>
+          <button type="button" class="view-tab" data-view="analytics-view">Analytics</button>
+          <button type="button" class="view-tab" data-view="backtest-view">Backtest Lab</button>
+          <button type="button" class="view-tab" data-view="saved-sessions-view">Saved Sessions</button>
+        </div>
+
+        <section id="paper-view" class="view-panel is-active" aria-label="Trader view">
+        <section class="live-panel" aria-label="Live Robinhood trading controls">
+          <div class="panel-heading">
+            <p class="eyebrow">Local API</p>
+            <h2 id="execution-panel-title">Live Robinhood Trading</h2>
+            <p id="live-status-text">Use the Python web app server to pull real Robinhood quotes and run decisions in the configured trading mode.</p>
+          </div>
+          <div id="execution-banner" class="execution-banner is-waiting">
+            <span>Execution Mode</span>
+            <strong>Checking</strong>
+          </div>
+          <div class="live-actions">
+            <button type="button" id="check-live-status">Check Connection</button>
+            <button type="button" id="run-live-tick">Start Live Tick Stream</button>
+            <button type="button" id="reset-live-session">Reset Trading Session</button>
+          </div>
+          <div class="live-grid" aria-label="Live trading status">
+            <article class="execution-mode-card">
+              <span>Execution Mode</span>
+              <strong id="execution-mode">Checking</strong>
+            </article>
+            <article>
+              <span>Active Symbol</span>
+              <strong id="live-symbols">Waiting</strong>
+            </article>
+            <article>
+              <span>Latest Prices</span>
+              <strong id="live-prices">Waiting</strong>
+            </article>
+            <article>
+              <span>Last Signals</span>
+              <strong id="live-signals">Waiting</strong>
+            </article>
+            <article>
+              <span>Positions</span>
+              <strong id="live-positions">None</strong>
+            </article>
+            <article>
+              <span>SQL Collector</span>
+              <strong id="collector-status">Waiting</strong>
+            </article>
+            <article>
+              <span>Manual State</span>
+              <strong id="manual-state">Ready</strong>
+            </article>
+            <article>
+              <span>Discord Control</span>
+              <strong id="discord-control-status">Off</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="live-panel" aria-label="Manual trading controls">
+          <div class="panel-heading">
+            <p class="eyebrow">Manual Control</p>
+            <h2>Operator Actions</h2>
+            <p id="manual-control-status">Pause, resume, force-exit positions, or toggle the risk kill switch.</p>
+          </div>
+          <div class="manual-actions">
+            <button type="button" id="manual-pause">Pause Bot</button>
+            <button type="button" id="manual-resume">Resume Bot</button>
+            <button type="button" id="manual-kill-on">Kill Switch On</button>
+            <button type="button" id="manual-kill-off">Kill Switch Off</button>
+            <button type="button" id="manual-force-exit">Force Exit Symbol</button>
+          </div>
+        </section>
+
         <div class="metrics-grid">
           <article>
             <span>Cash</span>
@@ -151,18 +272,42 @@
 
         <section class="chart-panel" aria-label="Price and signal chart">
           <div class="panel-heading">
-            <p class="eyebrow">Paper Output</p>
-            <h2>Market Stream</h2>
+            <p class="eyebrow" id="stream-eyebrow">Execution Stream</p>
+            <h2>Live Market Stream</h2>
             <p id="signal-summary">Waiting for simulation.</p>
           </div>
+          <div class="stream-toolbar" aria-label="Live stream viewport status">
+            <div>
+              <span>Window</span>
+              <strong id="chart-window-label">Last 5 minutes</strong>
+            </div>
+            <div>
+              <span>Visible Range</span>
+              <strong id="chart-range-label">Waiting</strong>
+            </div>
+            <div>
+              <span>Samples</span>
+              <strong id="chart-sample-count">0 ticks</strong>
+            </div>
+            <div>
+              <span>Target Level</span>
+              <strong id="chart-target-level">No open trade</strong>
+            </div>
+            <button type="button" id="jump-live-chart">Jump Live</button>
+          </div>
           <canvas id="price-chart" width="980" height="360" aria-label="Price chart"></canvas>
+          <div class="chart-scrollbar" aria-label="Chart history window">
+            <span>Past</span>
+            <input id="chart-window-scroll" type="range" min="0" max="0" value="0" />
+            <span>Live</span>
+          </div>
         </section>
 
         <section class="table-panel" aria-label="Trade and event history">
           <div class="panel-heading">
             <p class="eyebrow">Audit Trail</p>
             <h2>Event Log</h2>
-            <p>Signals, approved paper trades, and rejected trades.</p>
+            <p id="event-log-copy">Signals, approved orders, mirrored trades, and rejected trades.</p>
           </div>
           <div class="table-wrap">
             <table>
@@ -184,59 +329,276 @@
           <div class="panel-heading">
             <p class="eyebrow">Reference Card</p>
             <h2>Control Stack Notes</h2>
-            <p>A quick reminder of what each paper-trading control changes.</p>
+            <p>A quick reminder of what each trading control changes.</p>
           </div>
 
           <div class="reference-grid">
             <article>
               <span>Starting Cash</span>
-              <p>Total simulated account balance before any paper trades run.</p>
+              <p>Total local account mirror used for sizing and exposure calculations.</p>
             </article>
             <article>
               <span>Max Trade Size</span>
               <p>Caps how much available cash a single buy can deploy.</p>
             </article>
             <article>
-              <span>Max Daily Loss</span>
-              <p>Stops new buys after realized losses reach the limit.</p>
+              <span>Max Daily Loss %</span>
+              <p>Stops new buys after realized losses reach this percentage of starting cash.</p>
             </article>
             <article>
-              <span>Max Trades Per Day</span>
-              <p>Limits how many paper entries the optimizer can open.</p>
+              <span>Cooldown Sec</span>
+              <p>Wait time after a losing exit before another buy can be approved.</p>
+            </article>
+            <article>
+              <span>Target Profit %</span>
+              <p>Exits when price reaches this percentage above the actual buy price.</p>
+            </article>
+            <article>
+              <span>Entry Score %</span>
+              <p>Momentum Confidence Score threshold used to open a trade. It no longer forces exits.</p>
+            </article>
+            <article>
+              <span>Entry Interval Sec</span>
+              <p>After a buy remains open for this long, another qualifying momentum entry may open a separate lot.</p>
+            </article>
+            <article>
+              <span>Max Open Trades</span>
+              <p>Caps the number of independently targeted lots that may be open at the same time.</p>
             </article>
             <article>
               <span>Gain Reserve %</span>
               <p>Saves a percentage of profitable realized exits as a tax-safety planning bucket.</p>
             </article>
             <article>
-              <span>Lookback Window</span>
-              <p>Number of recent prices used to judge lows, highs, dips, and momentum.</p>
-            </article>
-            <article>
-              <span>Buy Dip %</span>
-              <p>Minimum drop from a recent high before a rebound can become a buy setup.</p>
-            </article>
-            <article>
-              <span>Rebound Confirm %</span>
-              <p>Minimum recovery from a recent low before the optimizer buys.</p>
-            </article>
-            <article>
-              <span>Profit Target %</span>
-              <p>Gain from entry that triggers a paper sell to lock in profit.</p>
-            </article>
-            <article>
-              <span>Stop Loss %</span>
-              <p>Loss from entry that triggers a protective paper sell.</p>
-            </article>
-            <article>
-              <span>Trailing Stop %</span>
-              <p>Allowed pullback from the highest price seen after entry.</p>
+              <span>Catastrophic Loss %</span>
+              <p>Emergency loss threshold that can force a protective sell.</p>
             </article>
             <article>
               <span>Kill Switch</span>
               <p>Rejects every trade, useful for testing the safety layer.</p>
             </article>
           </div>
+        </section>
+        </section>
+
+        <section id="analytics-view" class="view-panel" aria-label="Risk and performance analytics">
+        <section class="live-panel analytics-header">
+          <div class="panel-heading">
+            <p class="eyebrow">Risk / Performance</p>
+            <h2>Analytics</h2>
+            <p id="analytics-copy">Trading performance and exposure metrics for the current live-data session.</p>
+          </div>
+        </section>
+
+        <div class="metrics-grid analytics-metrics-grid">
+          <article>
+            <span>Win Rate</span>
+            <strong id="analytics-win-rate">0.00%</strong>
+          </article>
+          <article>
+            <span>Profit Factor</span>
+            <strong id="analytics-profit-factor">0.00</strong>
+          </article>
+          <article>
+            <span>Total Return</span>
+            <strong id="analytics-total-return">0.00%</strong>
+          </article>
+          <article>
+            <span>Open Exposure</span>
+            <strong id="analytics-open-exposure">0.00%</strong>
+          </article>
+          <article>
+            <span>Average Win</span>
+            <strong id="analytics-average-win">$0.00</strong>
+          </article>
+          <article>
+            <span>Average Loss</span>
+            <strong id="analytics-average-loss">$0.00</strong>
+          </article>
+          <article>
+            <span>Best / Worst</span>
+            <strong id="analytics-best-worst">$0.00 / $0.00</strong>
+          </article>
+        </div>
+        </section>
+
+        <section id="backtest-view" class="view-panel" aria-label="Backtest Lab">
+          <section class="live-panel backtest-controls-panel" aria-label="Backtest controls">
+            <div class="panel-heading">
+              <p class="eyebrow">Backtest Lab</p>
+              <h2>Historical Strategy Test</h2>
+              <p>Run the momentum strategy against locally stored market data. Backtesting is read-only and does not affect trading state.</p>
+            </div>
+            <form id="backtest-form" class="backtest-form">
+              <label>
+                Symbol
+                <input id="backtest-symbol" value="XLM-USD" autocomplete="off" />
+              </label>
+              <label>
+                Start Date/Time
+                <input id="backtest-start" type="datetime-local" />
+              </label>
+              <label>
+                End Date/Time
+                <input id="backtest-end" type="datetime-local" />
+              </label>
+              <label>
+                Starting Cash
+                <input id="backtest-starting-cash" value="10000" inputmode="decimal" />
+              </label>
+              <label>
+                Max Trade Size
+                <input id="backtest-max-trade-size" value="100" inputmode="decimal" />
+              </label>
+              <label>
+                Entry Score
+                <input id="backtest-entry-score" value="50" inputmode="decimal" />
+              </label>
+              <label>
+                Exit Score (reserved)
+                <input id="backtest-exit-score" value="40" inputmode="decimal" readonly />
+              </label>
+              <label>
+                Target Profit %
+                <input id="backtest-target-profit" value="0.25" inputmode="decimal" />
+              </label>
+              <label>
+                Cooldown Sec
+                <input id="backtest-cooldown" value="60" inputmode="numeric" />
+              </label>
+              <label>
+                Entry Interval Sec
+                <input id="backtest-entry-interval" value="300" inputmode="numeric" />
+              </label>
+              <label>
+                Max Open Trades
+                <input id="backtest-max-open-trades" value="3" inputmode="numeric" />
+              </label>
+              <label>
+                Catastrophic Loss %
+                <input id="backtest-catastrophic-loss" value="-3" inputmode="decimal" />
+              </label>
+              <label class="switch backtest-switch">
+                <input id="walk-forward-enabled" type="checkbox" />
+                <span>Walk-forward testing</span>
+              </label>
+              <button type="submit" id="run-backtest">Run Backtest</button>
+              <p id="backtest-error" class="form-error" role="alert" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <section class="metrics-grid backtest-results-grid" aria-label="Backtest metrics">
+            <article><span>Total Return</span><strong id="bt-total-return">--</strong></article>
+            <article><span>Realized P/L</span><strong id="bt-realized-pl">--</strong></article>
+            <article><span>Max Drawdown</span><strong id="bt-max-drawdown">--</strong></article>
+            <article><span>Win Rate</span><strong id="bt-win-rate">--</strong></article>
+            <article><span>Average Win</span><strong id="bt-average-win">--</strong></article>
+            <article><span>Average Loss</span><strong id="bt-average-loss">--</strong></article>
+            <article><span>Trades</span><strong id="bt-trades">--</strong></article>
+            <article><span>Best / Worst</span><strong id="bt-best-worst">--</strong></article>
+          </section>
+
+          <section class="chart-panel" aria-label="Backtest charts">
+            <div class="panel-heading">
+              <p class="eyebrow">Historical Data</p>
+              <h2>Backtest Charts</h2>
+              <p id="backtest-summary">Run a backtest to inspect equity and trade markers.</p>
+            </div>
+            <div class="backtest-chart-grid">
+              <div>
+                <h3>Equity Curve</h3>
+                <canvas id="backtest-equity-chart" width="940" height="260"></canvas>
+              </div>
+              <div>
+                <h3>Price & Trades</h3>
+                <canvas id="backtest-price-chart" width="940" height="260"></canvas>
+              </div>
+            </div>
+          </section>
+
+          <section class="table-panel" aria-label="Walk-forward results">
+            <div class="panel-heading">
+              <p class="eyebrow">Walk-Forward</p>
+              <h2>Train/Test Check</h2>
+              <p id="walk-forward-warning">High training performance with weak unseen-period performance may indicate curve-fitting.</p>
+            </div>
+            <div class="walk-forward-grid">
+              <article><span>Best Parameters</span><strong id="wf-best-params">--</strong></article>
+              <article><span>Training Return</span><strong id="wf-training-return">--</strong></article>
+              <article><span>Training Drawdown</span><strong id="wf-training-drawdown">--</strong></article>
+              <article><span>Training Win Rate</span><strong id="wf-training-win-rate">--</strong></article>
+              <article><span>Test Return</span><strong id="wf-test-return">--</strong></article>
+              <article><span>Test Drawdown</span><strong id="wf-test-drawdown">--</strong></article>
+              <article><span>Test Win Rate</span><strong id="wf-test-win-rate">--</strong></article>
+              <article><span>Degradation</span><strong id="wf-degradation">--</strong></article>
+            </div>
+          </section>
+
+          <section class="table-panel" aria-label="Rejected trades and trade log">
+            <div class="panel-heading">
+              <p class="eyebrow">Audit</p>
+              <h2>Backtest Trade Log</h2>
+              <p>Closed and open simulated trades from this isolated historical run.</p>
+            </div>
+            <div class="rejection-summary" id="backtest-rejections">Rejected trades by reason: --</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Trade ID</th>
+                    <th>Symbol</th>
+                    <th>Entry</th>
+                    <th>Entry Price</th>
+                    <th>Entry Score</th>
+                    <th>Exit</th>
+                    <th>Exit Price</th>
+                    <th>Exit Score</th>
+                    <th>Trade Size</th>
+                    <th>P/L</th>
+                    <th>Return %</th>
+                    <th>Exit Reason</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="backtest-trade-log"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="saved-sessions-view" class="view-panel" aria-label="SQLite saved sessions">
+          <section class="live-panel saved-sessions-header">
+            <div class="panel-heading">
+              <p class="eyebrow">SQLite Archive</p>
+              <h2>Saved 30-Minute Sessions</h2>
+              <p id="saved-sessions-summary">Load saved trading activity grouped into fixed 30-minute windows.</p>
+            </div>
+            <div class="live-actions">
+              <button type="button" id="refresh-saved-sessions">Refresh Saved Data</button>
+            </div>
+            <div class="live-grid" aria-label="Saved data totals">
+              <article>
+                <span>Session Cards</span>
+                <strong id="saved-session-count">--</strong>
+              </article>
+              <article>
+                <span>Market Data Rows</span>
+                <strong id="saved-market-count">--</strong>
+              </article>
+              <article>
+                <span>Saved Trades</span>
+                <strong id="saved-trade-count">--</strong>
+              </article>
+              <article>
+                <span>Rejected Trades</span>
+                <strong id="saved-rejected-count">--</strong>
+              </article>
+            </div>
+          </section>
+
+          <div id="saved-sessions-state" class="saved-sessions-state" role="status">Open this tab to load SQLite sessions.</div>
+          <section id="saved-session-cards" class="saved-session-grid" aria-live="polite"></section>
         </section>
       </section>
     </main>

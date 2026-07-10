@@ -24,7 +24,7 @@ def test_price_action_buys_after_rebound_confirmation() -> None:
     assert price_action_live_signal(prices, 5, has_position=False) == Signal.BUY
 
 
-def test_price_action_sells_when_profit_target_is_reached() -> None:
+def test_price_action_sells_when_sell_above_dip_target_is_reached() -> None:
     prices = [10, 10, 10, 10, 10, 12, 14, 12, 10, 8]
 
     assert (
@@ -34,6 +34,8 @@ def test_price_action_sells_when_profit_target_is_reached() -> None:
             has_position=True,
             entry_price=12,
             highest_since_entry=14,
+            dip_reference_price=10,
+            sell_above_dip_percent=30,
         )
         == Signal.SELL
     )
